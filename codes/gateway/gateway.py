@@ -1,3 +1,5 @@
+# coding: utf-8
+
 import worker_upython
 import config
 import config_lora
@@ -43,10 +45,11 @@ class Gateway(worker_upython.Worker, config_lora.Controller, router.Router):
             
             pkt = self.received_packet(payload_string, transceiver.packetRssi())            
             self.update_route_from_packet(pkt)
-            self.notice_route_from_packet(pkt)          
+            self.notice_route_from_packet(pkt)
             if self.is_nearest_gateway(pkt.pay_load.frm):
                 self.ack(pkt.pay_load)
                 self.dispatch_payload(pkt.pay_load) 
+                self.publish_received_payload(pkt.pay_load)
             
         except Exception as e:
             print(e) 
@@ -89,5 +92,21 @@ class Gateway(worker_upython.Worker, config_lora.Controller, router.Router):
     def broadcast_payload(self, pay_load):
         self.dispatch_payload(pay_load, broadcast = True)
         
+        
+    def publish_received_payload(self, pay_load, prefix = 'received'):
+        receiver = '/'.join([prefix, pay_load.frm])
+        
+        message = {'receiver': receiver,
+                   'message_type': 'function',
+                   'function': 'process_payload',
+                   'kwargs': {'pay_load_json': pay_load.dumps()}}
+        self.request(message) 
+        
+
+    def process_payload(self, pay_load_json):
+        # pay_load = payload.Payload().loads(pay_load_json)
+        pass
+        
+
         
 Worker = Gateway

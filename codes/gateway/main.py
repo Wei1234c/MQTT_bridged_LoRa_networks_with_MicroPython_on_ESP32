@@ -1,4 +1,5 @@
 # coding: utf-8
+
 import gc
 gc.collect()
 
@@ -13,7 +14,6 @@ gc.collect()
 import config_lora
 gateways = ['32aea4fffe809528', '260ac4fffe0c1764']
 IS_GATEWAY = config_lora.NODE_EUI in gateways 
-
 
 
 def run():
@@ -32,7 +32,7 @@ def run():
                     print('connecting to network...')
                     sta_if.active(True)        
                     # sta_if.connect(SSID, PASSWORD)
-                    sta_if.connect('Lin_841', '51557010') 
+                    sta_if.connect('SSID', '') 
                     while not sta_if.isconnected():
                         pass
                 print('Network configuration:', sta_if.ifconfig())
