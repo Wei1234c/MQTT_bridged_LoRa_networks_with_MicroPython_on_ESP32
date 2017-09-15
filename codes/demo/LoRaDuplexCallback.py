@@ -3,8 +3,8 @@ from config_lora import NODE_NAME, NODE_EUI, millisecond
 import payload
 
 msgCount = 0            # count of outgoing messages
-INTERVAL = 2000         # interval between sends
-INTERVAL_BASE = 2000    # interval between sends base
+INTERVAL = 10000         # interval between sends
+INTERVAL_BASE = 10000    # interval between sends base
  
 
 def duplexCallback(lora):    

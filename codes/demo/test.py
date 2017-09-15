@@ -1,11 +1,7 @@
 import sx127x
 import config_lora 
-
-
-
-# import LoRaSender
-# import LoRaReceiverCallback
 import LoRaDuplexCallback
+
 
 if config_lora.IS_ESP8266: 
     PIN_ID_SS = 15
@@ -25,10 +21,7 @@ def main():
     lora = controller.add_transceiver(sx127x.SX127x(name = 'LoRa'),
                                       pin_id_ss = PIN_ID_SS,
                                       pin_id_RxDone = PIN_ID_FOR_LORA_DIO0)
-    print('lora', lora)
-    
-    # LoRaSender.send(lora)
-    # LoRaReceiverCallback.receiveCallback(lora)
+    print('lora', lora)    
     LoRaDuplexCallback.duplexCallback(lora)
 
     

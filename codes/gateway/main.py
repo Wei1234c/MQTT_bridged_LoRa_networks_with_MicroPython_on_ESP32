@@ -6,24 +6,21 @@ gc.collect()
 import sx127x
 gc.collect()
 
-# SF8_NODE_EUI = 'f3d308fffe00'
-# SF8_GATEWAY_EUI = '32aea4fffe809528'
-# SF9_NODE_EUI = '32aea4fffe054928'
-# SF9_GATEWAY_EUI = '260ac4fffe0c1764'
+# NODE1_EUI = 'f3d308fffe00'
+# GATEWAY1_EUI = '32aea4fffe809528'
+# NODE2_EUI = '32aea4fffe054928'
+# GATEWAY2_EUI = '260ac4fffe0c1764'
 
 import config_lora
 gateways = ['32aea4fffe809528', '260ac4fffe0c1764']
 IS_GATEWAY = config_lora.NODE_EUI in gateways 
 
 
-def run():
-    
-    if IS_GATEWAY:
-        
+def run():    
+    if IS_GATEWAY:        
         import gateway
         
-        def setup_wifi(): 
-            
+        def setup_wifi():             
             def wait_for_wifi():
                 import network
 
@@ -43,8 +40,7 @@ def run():
             led.blink_on_board_led(times = 2)
             
 
-        def start_gateway():
-            
+        def start_gateway():            
             if config_lora.IS_ESP8266: 
                 PIN_ID_SS = 15
                 PIN_ID_FOR_LORA_DIO0 = 5
@@ -60,19 +56,17 @@ def run():
             gateway = nd.worker            
             lora = gateway.add_transceiver(sx127x.SX127x(name = 'LoRa'),
                                            pin_id_ss = PIN_ID_SS,
-                                           pin_id_RxDone = PIN_ID_FOR_LORA_DIO0) 
-                                              
-            lora.onReceive(gateway.received_packet_update_route)
+                                           pin_id_RxDone = PIN_ID_FOR_LORA_DIO0)                                              
+            lora.onReceive(gateway.received_packet_update_link)
             lora.receive()
 
-            nd.run() 
+            nd.run()
 
             
         setup_wifi()
         start_gateway()
 
-    else: 
-
+    else:
         import test 
         gc.collect()
         test.main()

@@ -36,20 +36,21 @@ class Gateway(worker_upython.Worker, config_lora.Controller, router.Router):
         return pkt
 
         
-    def received_packet_update_route(self, transceiver, payload_bytes):
-        transceiver.blink_led()
+    def received_packet_update_link(self, transceiver, payload_bytes):
+        self.blink_led()
                 
         try:
             payload_string = payload_bytes.decode()
             print("*** Received message ***\n{}".format(payload_string))
             
-            pkt = self.received_packet(payload_string, transceiver.packetRssi())            
-            self.update_route_from_packet(pkt)
-            self.notice_route_from_packet(pkt)
-            if self.is_nearest_gateway(pkt.pay_load.frm):
-                self.ack(pkt.pay_load)
-                self.dispatch_payload(pkt.pay_load) 
-                self.publish_received_payload(pkt.pay_load)
+            pkt = self.received_packet(payload_string, transceiver.packetRssi())
+            
+            if not self.is_a_gateway(pkt.pay_load.frm):
+                self.update_link_from_packet(pkt)
+                if self.is_nearest_gateway(pkt.pay_load.frm):
+                    self.ack(pkt.pay_load)
+                    self.dispatch_payload(pkt.pay_load) 
+                    self.publish_received_payload(pkt.pay_load)
             
         except Exception as e:
             print(e) 
@@ -68,14 +69,22 @@ class Gateway(worker_upython.Worker, config_lora.Controller, router.Router):
         
         
     def transmit_payload(self, payload_string, return_to_rx_mode = True):
+        pay_load = payload.Payload().loads(payload_string)
+        pay_load.via = self.eui
         transceiver = self._get_transceiver()
-        transceiver.println(payload_string)
+        transceiver.println(pay_load.dumps())
         if return_to_rx_mode: transceiver.receive()
         
         
-    def dispatch_payload(self, pay_load, broadcast = False):
-        receiver = self.get_nearest_gateway_eui(pay_load.to)
-        receiver = 'Hub' if broadcast or receiver is None else receiver
+    def dispatch_payload(self, pay_load, broadcast = False):        
+        if broadcast or pay_load.to is None:    # destination not specified.
+            receiver = 'Hub'            
+        elif self.is_a_gateway(pay_load.to):      # is a gateway 
+            receiver = pay_load.to  
+        else:
+            receiver = self.get_nearest_gateway_eui(pay_load.to)        
+            if not receiver:                    # Unknown. something else, not a gateway or node.
+                return 
         
         message = {'receiver': receiver,
                    'message_type': 'function',

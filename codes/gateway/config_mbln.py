@@ -1,1 +1,3 @@
 # coding: utf-8
+
+LINK_EXPIRATION_SECONDS = 10

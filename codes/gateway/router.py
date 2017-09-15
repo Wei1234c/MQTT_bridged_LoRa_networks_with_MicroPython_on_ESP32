@@ -1,57 +1,67 @@
 # coding: utf-8
+
+from config_lora import millisecond
+from config_mbln import LINK_EXPIRATION_SECONDS
        
 
 class Router:    
     
     def __init__(self):
-        self.routing_table = {}
-        # self.routing_table = {self.eui: {self.eui: 0}}
-    
-
-    def update_route_from_packet(self, pkt, clear_first = True):
-        kwargs = {'node_eui': pkt.pay_load.frm, 
-                  'gateway_eui': pkt.gateway_eui, 
-                  'rssi': pkt.rssi, 
-                  'clear_first': clear_first}
-        self.update_route(**kwargs)
+        self.links = {}
                     
 
-    def update_route(self, node_eui, gateway_eui, rssi, clear_first = False):
-        if node_eui is not None:
-            if clear_first: self.routing_table[node_eui] = {}
-            routes = self.routing_table.get(node_eui, {})
-            routes[gateway_eui] = rssi
-            self.routing_table[node_eui] = routes
-            
-        print('**** Routing Table *****\n', self.routing_table)
-        print('******* Networks *******\n', self.get_networks())  
+    def update_link(self, gateway_eui, node_eui, rssi):
+        if node_eui is not None: 
+            self.links[(gateway_eui, node_eui)] = (rssi, millisecond()) 
+        
+            # receive notice from other gateway, and the node doesn't show on this gateway, probably out of range.
+            if gateway_eui != self.eui:
+                if is_link_expired(self.eui, node_eui):
+                    self.delete_link(self.eui, node_eui)
+                    self.notice_link(self.eui, node_eui, to_add = False)
+                
+            print('******** Links *********\n', self.links)
+            print('******* Networks *******\n', self.get_networks())  
+            # print(self.get_nearest_gateway_eui('32aea4fffe054928'))
                     
                     
-    def notice_route_from_packet(self, pkt, clear_first = False):
-        kwargs = {'node_eui': pkt.pay_load.frm, 
-                  'gateway_eui': pkt.gateway_eui, 
-                  'rssi': pkt.rssi, 
-                  'clear_first': clear_first}
-        self.notice_route(**kwargs)
+    def delete_link(self, gateway_eui, node_eui, rssi = None):
+        if node_eui is not None: 
+            self.links.pop((gateway_eui, node_eui), None)
+        
+
+    def update_link_from_packet(self, pkt):
+        if pkt.pay_load.via is None:  # not relayed. only packet from LoRa node counts.
+            kwargs = {'node_eui': pkt.pay_load.frm, 
+                      'gateway_eui': pkt.gateway_eui, 
+                      'rssi': pkt.rssi}
+            self.update_link(**kwargs)
+            self.notice_link(**kwargs)
         
         
-    def notice_route(self, node_eui, gateway_eui, rssi, clear_first = False):
+    def notice_link(self, gateway_eui, node_eui, rssi = None, to_add = True):
         message = {'receiver': 'Hub',
                    'message_type': 'function',
-                   'function': 'update_route',
+                   'function': 'update_link' if to_add else 'delete_link',
                    'kwargs': {'node_eui': node_eui, 
                               'gateway_eui': gateway_eui, 
-                              'rssi': rssi, 
-                              'clear_first': clear_first}}
+                              'rssi': rssi}}
         self.request(message)
         
-
-    def get_nearest_gateway_eui(self, node_eui):         
-        routes = self.routing_table.get(node_eui, {})
-        routes = [(v, k) for k, v in routes.items()]
-        routes = sorted(routes, reverse = True)
-        if len(routes) > 0:
-            return routes[0][1]
+        
+    def is_link_expired(self, gateway_eui, node_eui):
+        last_status = self.links.get((gateway_eui, node_eui))
+        if last_status:
+            rssi, last_seen_time = last_status
+            return abs(millisecond() - last_seen_time) > LINK_EXPIRATION_SECONDS * 1000
+            
+    
+    def get_nearest_gateway_eui(self, node_eui):
+        # {(gateway_eui, node_eui): (rssi, last_seen_time)}        
+        links = [(v[0], k[0]) for k, v in self.links.items() if k[1] == node_eui]        
+        if len(links) > 0:
+            links = sorted(links, reverse = True)
+            return links[0][1]
             
             
     def is_nearest_gateway(self, node_eui): 
@@ -60,15 +70,17 @@ class Router:
 
     def get_networks(self):
         networks = {}
-        for node_eui, gateways_rssi in self.routing_table.items():
-            for gateway_eui, rssi in gateways_rssi.items():
-                network = networks.get(gateway_eui, [])
-                network.append((node_eui, rssi))
-                networks[gateway_eui] = network
+        
+        # {(gateway_eui, node_eui): (rssi, last_seen_time)}
+        for k, v in self.links.items(): 
+            networks.setdefault(k[0], []).append((k[1], v[0])) 
             
         return networks 
         
 
     def get_network(self, gateway_eui):
-        networks = self.get_networks()
-        return networks.get(gateway_eui)
+        return self.get_networks().get(gateway_eui)
+        
+
+    def is_a_gateway(self, eui):
+        return eui in self.get_networks().keys()

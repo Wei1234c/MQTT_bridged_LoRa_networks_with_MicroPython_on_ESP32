@@ -1,9 +1,6 @@
 # coding: utf-8
 
-import json
-import time
-from config_lora import millisecond
-import payload
+from config_lora import millisecond 
        
 
 class Packet:    
