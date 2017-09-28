@@ -31,7 +31,7 @@ def run():
                     print('connecting to network...')
                     sta_if.active(True)        
                     # sta_if.connect(SSID, PASSWORD)
-                    sta_if.connect('Wei RN4', '51557010') 
+                    sta_if.connect('Lin_841', '51557010') 
                     while not sta_if.isconnected():
                         pass
                 print('Network configuration:', sta_if.ifconfig())
@@ -45,11 +45,11 @@ def run():
         def start_gateway():                 
             import node
             nd = node.Node()
-            gateway = nd.worker
-            lora = gateway.add_transceiver(sx127x.SX127x(name = 'LoRa'),
-                                           pin_id_ss = config_lora.Controller.PIN_ID_FOR_LORA_SS,
-                                           pin_id_RxDone = config_lora.Controller.PIN_ID_FOR_LORA_DIO0)                                      
-            lora.onReceive(gateway.received_packet_update_link)
+            gw = nd.worker
+            lora = gw.add_transceiver(sx127x.SX127x(name = 'LoRa'),
+                                      pin_id_ss = config_lora.Controller.PIN_ID_FOR_LORA_SS,
+                                      pin_id_RxDone = config_lora.Controller.PIN_ID_FOR_LORA_DIO0)                                      
+            lora.onReceive(gw.received_packet_update_link)
             lora.receive()
 
             nd.run()
