@@ -10,9 +10,11 @@ gc.collect()
 # GATEWAY1_EUI = '32aea4fffe809528'
 # NODE2_EUI = '32aea4fffe054928'
 # GATEWAY2_EUI = '260ac4fffe0c1764'
+# NODE3_EUI = '32aea4fffe375168'
+# GATEWAY3_EUI = '32aea4fffe3754c4'
 
 import config_lora
-gateways = ['32aea4fffe809528', '260ac4fffe0c1764']
+gateways = ['32aea4fffe809528', '260ac4fffe0c1764', '32aea4fffe3754c4']
 IS_GATEWAY = config_lora.NODE_EUI in gateways 
 
 
@@ -29,7 +31,7 @@ def run():
                     print('connecting to network...')
                     sta_if.active(True)        
                     # sta_if.connect(SSID, PASSWORD)
-                    sta_if.connect('SSID', '') 
+                    sta_if.connect('Wei RN4', '51557010') 
                     while not sta_if.isconnected():
                         pass
                 print('Network configuration:', sta_if.ifconfig())
@@ -40,23 +42,13 @@ def run():
             led.blink_on_board_led(times = 2)
             
 
-        def start_gateway():            
-            if config_lora.IS_ESP8266: 
-                PIN_ID_SS = 15
-                PIN_ID_FOR_LORA_DIO0 = 5
-            if config_lora.IS_ESP32:
-                PIN_ID_SS = 15
-                PIN_ID_FOR_LORA_DIO0 = 5
-            if config_lora.IS_RPi:        
-                PIN_ID_SS = 25
-                PIN_ID_FOR_LORA_DIO0 = 17
-                
-            import node         
+        def start_gateway():                 
+            import node
             nd = node.Node()
-            gateway = nd.worker            
+            gateway = nd.worker
             lora = gateway.add_transceiver(sx127x.SX127x(name = 'LoRa'),
-                                           pin_id_ss = PIN_ID_SS,
-                                           pin_id_RxDone = PIN_ID_FOR_LORA_DIO0)                                              
+                                           pin_id_ss = config_lora.Controller.PIN_ID_FOR_LORA_SS,
+                                           pin_id_RxDone = config_lora.Controller.PIN_ID_FOR_LORA_DIO0)                                      
             lora.onReceive(gateway.received_packet_update_link)
             lora.receive()
 

@@ -1,6 +1,6 @@
 # coding: utf-8
 
-import config
+import config_mqtt
 import commander
 import gateway as worker_impl
     
@@ -9,7 +9,7 @@ class Node(commander.Commander):
     
     def __init__(self):
         super().__init__()
-        self.worker = worker_impl.Worker(config.BROKER_HOST, config.HUB_PORT)
+        self.worker = worker_impl.Worker(config_mqtt.BROKER_HOST, config_mqtt.HUB_PORT)
         self.worker.set_parent(self)
 
         

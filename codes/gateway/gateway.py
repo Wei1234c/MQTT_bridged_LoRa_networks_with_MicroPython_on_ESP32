@@ -1,7 +1,6 @@
 # coding: utf-8
 
 import worker_upython
-import config
 import config_lora
 import payload
 import packet
@@ -11,7 +10,6 @@ import router
 class Gateway(worker_upython.Worker, config_lora.Controller, router.Router):
     
     def __init__(self, server_address, server_port,
-                 spi = config_lora.Controller.spi, 
                  pin_id_led = config_lora.Controller.ON_BOARD_LED_PIN_NO, 
                  on_board_led_high_is_on = config_lora.Controller.ON_BOARD_LED_HIGH_IS_ON,
                  pin_id_reset = config_lora.Controller.PIN_ID_FOR_LORA_RESET,
@@ -19,7 +17,6 @@ class Gateway(worker_upython.Worker, config_lora.Controller, router.Router):
                  
         self.eui = config_lora.NODE_EUI
         config_lora.Controller.__init__(self, 
-                                        spi, 
                                         pin_id_led,
                                         on_board_led_high_is_on,
                                         pin_id_reset,
@@ -37,13 +34,15 @@ class Gateway(worker_upython.Worker, config_lora.Controller, router.Router):
 
         
     def received_packet_update_link(self, transceiver, payload_bytes):
-        self.blink_led()
+        self.blink_led()   
                 
         try:
             payload_string = payload_bytes.decode()
+            rssi = transceiver.packetRssi()
             print("*** Received message ***\n{}".format(payload_string))
             
-            pkt = self.received_packet(payload_string, transceiver.packetRssi())
+            pkt = self.received_packet(payload_string, rssi)
+            if config_lora.IS_TTGO_LORA_OLED: transceiver.show_packet(payload_string, rssi)  
             
             if not self.is_a_gateway(pkt.pay_load.frm):
                 self.update_link_from_packet(pkt)
@@ -78,9 +77,9 @@ class Gateway(worker_upython.Worker, config_lora.Controller, router.Router):
         
     def dispatch_payload(self, pay_load, broadcast = False):        
         if broadcast or pay_load.to is None:    # destination not specified.
-            receiver = 'Hub'            
-        elif self.is_a_gateway(pay_load.to):      # is a gateway 
-            receiver = pay_load.to  
+            receiver = 'Hub'
+        elif self.is_a_gateway(pay_load.to):    # is a gateway 
+            receiver = pay_load.to
         else:
             receiver = self.get_nearest_gateway_eui(pay_load.to)        
             if not receiver:                    # Unknown. something else, not a gateway or node.

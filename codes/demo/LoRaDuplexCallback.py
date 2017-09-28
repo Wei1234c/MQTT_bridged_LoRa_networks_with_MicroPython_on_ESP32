@@ -1,5 +1,5 @@
 import time
-from config_lora import NODE_NAME, NODE_EUI, millisecond
+import config_lora
 import payload
 
 msgCount = 0            # count of outgoing messages
@@ -20,15 +20,15 @@ def do_loop(lora):
     interval = 0
     
     while True:
-        now = millisecond()
+        now = config_lora.millisecond()
         if now < lastSendTime: lastSendTime = now 
         
         if (now - lastSendTime > interval):
             lastSendTime = now                                      # timestamp the message
             interval = (lastSendTime % INTERVAL) + INTERVAL_BASE    # 2-3 seconds
             
-            message = "{} {}".format(NODE_NAME, msgCount)
-            pl = payload.Payload(frm = NODE_EUI, 
+            message = "{} {}".format(config_lora.NODE_NAME, msgCount)
+            pl = payload.Payload(frm = config_lora.NODE_EUI, 
                                  to = None,
                                  message = message)
             sendMessage(lora, pl.dumps())                     # send message
@@ -44,10 +44,12 @@ def sendMessage(lora, outgoing):
     
 def on_receive(lora, payload_bytes):
     lora.blink_led()   
-            
+
     try:
-        print("*** Received message ***\n{}".format(payload_bytes.decode()))
+        payload_string = payload_bytes.decode()
+        rssi = lora.packetRssi()
+        print("*** Received message ***\n{}".format(payload_string))
+        if config_lora.IS_TTGO_LORA_OLED: lora.show_packet(payload_string, rssi)
     except Exception as e:
         print(e)
-    print("with RSSI {}\n".format(lora.packetRssi()))
-    
+    print("with RSSI {}\n".format(rssi))    
