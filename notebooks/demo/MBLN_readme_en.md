@@ -91,7 +91,7 @@ Therefor, LoRa is very suitable for a wide-area multiple-points scenario. I pers
     
     - There are also integrated ESP32+SX1278_LoRa+SSD1306_OLED modules. The cost can be as low as USD 11.  
     
-      ![](https://3.bp.blogspot.com/-OJTSiFdiCDU/Wbo0jXnMQsI/AAAAAAACPtM/DACIY_cYJdkQORSBP_oy82cmY3tuPZUGACLcBGAs/s400/SX1278-LoRa-ESP32-Bluetooth-WI-FI-Lora-Internet-Antena-Placa-de-Desenvolvimento-for-Arduino-TTGO.jpg)
+      ![](https://4.bp.blogspot.com/-aqrlAOG8_yY/Wc75_f86UuI/AAAAAAACQHk/JlNcYTv2CIslMAWbtp6cgxIDqe_NgTiFgCKgBGAs/s640/IMG_20170930_085659.jpg)
 
 - Easy to deploy:
   - Minimum setup. Just connect a gateway to WiFi network, it will service those LoRa nodes within a few hundred meters.
