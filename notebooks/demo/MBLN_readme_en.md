@@ -58,7 +58,7 @@ Therefor, LoRa is very suitable for a wide-area multiple-points scenario. I pers
 - Using [MQTT](http://mqtt.org/) as backbone:
   - [MQTT](http://mqtt.org/) adopts the publish/subscribe model, it can convey messages in a broadcasting or end-to-end manner. It is quite flexible and efficient, and can be used as a backbone for trasmitting data between gateways.
   - A LoRa gateway is also an MQTT client that can send and receive MQTT messages.
-- Gateway as woker
+- Gateway as woker:
   - From [Celery](http://www.celeryproject.org/)'s point of view, a gateway is also a ***worker***, and we can communicate messages to each gateways via MQTT, commanding them to do specific work. Each gateway can also communicate and cooperate with each other through this mechanism.
 
 
@@ -66,7 +66,7 @@ Therefor, LoRa is very suitable for a wide-area multiple-points scenario. I pers
   
 - Addressing:
   - Each LoRa node or gateway has an EUI-64 address.
-- Communicate via. MQTT
+- Communicate via. MQTT:
   - A "LoRa gateway" is an ESP32, it is also a MQTT client and a worker (like a [Celery worker](http://docs.celeryproject.org/en/latest/userguide/workers.html)).
   - Gateways communicate via. MQTT protocol, and can be integrated with existing MQTT-based system easily.
   - Via MQTT, gateways can do RPC (Remote-Procedure-Call) to communicate and cooperate with each others.
@@ -85,9 +85,12 @@ Therefor, LoRa is very suitable for a wide-area multiple-points scenario. I pers
     - The effect is equivalent to a global broadcast. Therefore, **all LoRa networks in, for example, Taipei and New York city can be bridged and seemed as a single LoRa network**.    
 - Low cost and more affordable:
     - With ESP32 the cost is lower. The cheaper each gateway is, the more volunteers can afford it.
-  - Gateway used (ESP32 + RFM96W)
-    ![](https://3.bp.blogspot.com/-ull0K2sMp0M/WY8ep6nwB9I/AAAAAAACN6w/WmM1GYxTUfEYInGtMBWbkGbVtScAiUZDQCPcBGAYYCw/s640/IMG_20170812_225846.jpg)
-    - There are also integrated ESP32+SX1278_LoRa+SSD1306_OLED modules. The cost can be as low as USD 11.
+  - Gateway used (ESP32 + RFM96W)  
+  
+    ![](https://3.bp.blogspot.com/-ull0K2sMp0M/WY8ep6nwB9I/AAAAAAACN6w/WmM1GYxTUfEYInGtMBWbkGbVtScAiUZDQCPcBGAYYCw/s640/IMG_20170812_225846.jpg)  
+    
+    - There are also integrated ESP32+SX1278_LoRa+SSD1306_OLED modules. The cost can be as low as USD 11.  
+    
       ![](https://3.bp.blogspot.com/-OJTSiFdiCDU/Wbo0jXnMQsI/AAAAAAACPtM/DACIY_cYJdkQORSBP_oy82cmY3tuPZUGACLcBGAs/s400/SX1278-LoRa-ESP32-Bluetooth-WI-FI-Lora-Internet-Antena-Placa-de-Desenvolvimento-for-Arduino-TTGO.jpg)
 
 - Easy to deploy:
@@ -95,7 +98,7 @@ Therefor, LoRa is very suitable for a wide-area multiple-points scenario. I pers
 - Enhanced through-put:
   - Reduce the chance of collision
     - Packages may be routed based on the destinatd EUI address, it is possible to avoid global broadcasts, and hence minimum collision.
-- Bidirectional data exchange between MQTT and LoRa
+- Bidirectional data exchange between MQTT and LoRa:
   - An MQTT message from external can be sent to a gateway, commanding it to send a LoRa package and wire the data to a specific node.
   - The data transmitted by LoRa nodes can be collected by the MQTT mechanism easily.
 
@@ -107,13 +110,11 @@ Experimental model description:
 For an ESP32 to function as a gateway to bridge LoRa networks, it needs three parts of code (in the order of uploading to ESP32):
 
 1. [MQTT client as a worker - so ESP32 can communicate and cooperate with each others](https://github.com/Wei1234c/Elastic_Network_of_Things_with_MQTT_and_MicroPython)
-
 2. [SX127x driver - for ESP32 to drive SX127x](https://forum.micropython.org/viewtopic.php?f=16&t=3871)
+3. [LoRa gateway - for ESP32 to bridge LoRa networks](https://github.com/Wei1234c/MQTT_bridged_LoRa_networks_with_MicroPython_on_ESP32)  
 
-3. [LoRa gateway - for ESP32 to bridge LoRa networks](https://github.com/Wei1234c/MQTT_bridged_LoRa_networks_with_MicroPython_on_ESP32)
- 
  
-[![MBLN](https://raw.githubusercontent.com/Wei1234c/MQTT_bridged_LoRa_networks_with_MicroPython_on_ESP32/master/jpgs/MBLN.jpeg)](https://youtu.be/0rhd3wtU1Ak)
+[![MBLN](https://raw.githubusercontent.com/Wei1234c/MQTT_bridged_LoRa_networks_with_MicroPython_on_ESP32/master/jpgs/MBLN.jpeg)](https://youtu.be/0rhd3wtU1Ak)  
 
 - From left to right are node2, gateway2, gateway1, node1
 - Use SF (Spreading Factor) isolation: node2, gateway2 SF = 9, node1, gateway1 SF = 8. This simulates two LoRa networks that are quite far apart and could not communicate with each other.
@@ -124,7 +125,7 @@ For an ESP32 to function as a gateway to bridge LoRa networks, it needs three pa
   - Internet topology data will be exchanged through MQTT, and routing tables are built among gateways.
   - The ACK is echoed by the closest gateway.
   - The package is routed according to the destinated EUI address.
-- The [MQTT message command can be sent from a PC, in order to send a message to a LoRa node with destinated EUI address](https://github.com/Wei1234c/Elastic_Network_of_Things_with_MQTT_and_MicroPython/blob/master/notebooks/demo/MQTT%20bridged%20LoRa%20networks%20-%20demo.ipynb).
+- The [MQTT message command can be sent from a PC, in order to send a message to a LoRa node with destinated EUI address](https://github.com/Wei1234c/Elastic_Network_of_Things_with_MQTT_and_MicroPython/blob/master/notebooks/demo/MQTT%20bridged%20LoRa%20networks%20-%20demo.ipynb).  
 
 
 ### [Notes]
